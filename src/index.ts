@@ -3,6 +3,9 @@ import bodyParser from "body-parser";
 import connectDB from "./database";
 import cors from "cors";
 import userRoutes from "./routes/userRoutes";
+import { EventEmitter } from "events";
+
+const eventEmitter = new EventEmitter();
 
 const app = express();
 const PORT = 3001;
@@ -25,19 +28,17 @@ app.get('/events', (req, res) => {
     res.setHeader('Connection', 'keep-alive');
     res.flushHeaders();
   
-    const sendData = (data: string) => {
-      res.write(`data: ${data}\n\n`);
-    };
-  
-    setInterval(() => {
-      sendData('Data pengguna baru');
-    }, 5000); // Kirim data setiap 5 detik
-  
-    req.on('close', () => {
-      console.log('Connection closed');
-    });
+    const sendEvent = (data: any) => {
+      res.write(`data: ${JSON.stringify(data)}\n\n`);
+      };
+    
+      eventEmitter.on('data', sendEvent);
+    
+      req.on('close', () => {
+        eventEmitter.removeListener('data', sendEvent);
+      });
   });
-
+     
 app.get('/', (req, res) => {
     res.json({
       status: 'success',
