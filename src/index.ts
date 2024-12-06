@@ -11,9 +11,9 @@ connectDB();
 
 app.use(
     cors({
-      origin: 'http://localhost:5174', // Ganti dengan domain frontend kamu
-      methods: ['GET', 'POST', 'PUT', 'DELETE'], // Metode HTTP yang diizinkan
-      allowedHeaders: ['Content-Type', 'Authorization'], // Header yang diizinkan
+      origin: 'http://localhost:3000',
+      methods: ['GET', 'POST', 'PUT', 'DELETE'], 
+      allowedHeaders: ['Content-Type', 'Authorization'], 
     })
   );
 
