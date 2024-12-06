@@ -1,8 +1,7 @@
+// userController.ts
 import { Request, Response } from "express";
 import { registerUser, findUserByUID } from "../services/userService";
-import { EventEmitter } from "events";
-
-const eventEmitter = new EventEmitter();
+import { eventEmitter } from "../eventEmitter";  // Import eventEmitter
 
 export const register = async (req: Request, res: Response) => {
   const { nfc_uid, name } = req.body;
@@ -15,7 +14,6 @@ export const register = async (req: Request, res: Response) => {
     }
 
     const user = await registerUser(nfc_uid, name);
-    
     eventEmitter.emit('data', { message: "Pengguna baru berhasil terdaftar", user });
 
     res.status(201).json(user);
@@ -28,10 +26,9 @@ export const getUser = async (req: Request, res: Response) => {
   try {
     const user = await findUserByUID(req.params.nfc_uid);
     if (!user) {
-      eventEmitter.emit('data', { message: "Kartu belum terdaftar" });
-      return res.status(404).json({ message: "Kartu belum terdaftar" });
+      eventEmitter.emit('data', { message: "Kartu belum terdaftar", user: {nfc_uid: req.params.nfc_uid} });
+      return res.status(404).json({ message: "Kartu belum terdaftar", user: {nfc_uid: req.params.nfc_uid} });
     }
-
     eventEmitter.emit('data', { message: "Kartu ditemukan", user });
     res.json(user);
   } catch (error) {
