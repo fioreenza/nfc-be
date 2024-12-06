@@ -19,6 +19,25 @@ app.use(
 
 app.use(bodyParser.json());
 
+app.get('/events', (req, res) => {
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.flushHeaders();
+  
+    const sendData = (data: string) => {
+      res.write(`data: ${data}\n\n`);
+    };
+  
+    setInterval(() => {
+      sendData('Data pengguna baru');
+    }, 5000); // Kirim data setiap 5 detik
+  
+    req.on('close', () => {
+      console.log('Connection closed');
+    });
+  });
+
 app.get('/', (req, res) => {
     res.json({
       status: 'success',
