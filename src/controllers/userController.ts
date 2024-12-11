@@ -4,7 +4,12 @@ import { registerUser, findUserByUID } from "../services/userService";
 import { eventEmitter } from "../eventEmitter";  // Import eventEmitter
 
 export const register = async (req: Request, res: Response) => {
-  const { nfc_uid, name } = req.body;
+  const { nfc_uid, name, address, gender, dob } = req.body;
+
+  // Validate incoming request data
+  if (!nfc_uid || !name || !address || !gender || !dob) {
+    return res.status(400).json({ message: "All fields are required" });
+  }
 
   try {
     const existingUser = await findUserByUID(nfc_uid);
@@ -13,7 +18,7 @@ export const register = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "Kartu sudah terdaftar", user: existingUser });
     }
 
-    const user = await registerUser(nfc_uid, name);
+    const user = await registerUser(nfc_uid, name, address, gender, dob);
     eventEmitter.emit('data', { message: "Pengguna baru berhasil terdaftar", user });
 
     res.status(201).json(user);
@@ -23,11 +28,18 @@ export const register = async (req: Request, res: Response) => {
 };
 
 export const getUser = async (req: Request, res: Response) => {
+  const { nfc_uid } = req.params;
+
+  // Validate NFC UID parameter
+  if (!nfc_uid) {
+    return res.status(400).json({ message: "NFC UID is required" });
+  }
+
   try {
-    const user = await findUserByUID(req.params.nfc_uid);
+    const user = await findUserByUID(nfc_uid);
     if (!user) {
-      eventEmitter.emit('data', { message: "Kartu belum terdaftar", user: {nfc_uid: req.params.nfc_uid} });
-      return res.status(404).json({ message: "Kartu belum terdaftar", user: {nfc_uid: req.params.nfc_uid} });
+      eventEmitter.emit('data', { message: "Kartu belum terdaftar", user: {nfc_uid} });
+      return res.status(404).json({ message: "Kartu belum terdaftar", user: {nfc_uid} });
     }
     eventEmitter.emit('data', { message: "Kartu ditemukan", user });
     res.json(user);
